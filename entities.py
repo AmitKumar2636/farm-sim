@@ -24,11 +24,25 @@ class Duck (Bird):
 class Turkey(Bird):
 	def __init__(selff,gender):
 		super().__init__("turkey",gender,300)
-c1=Chicken("male")
-c2=Chicken("female")
-d1=Duck("male")
-d2=Duck("female")
-t1=Turkey("male")
-t2=Turkey("female")
-for bird in [c1,c2,t1,t2,d1,d2]:
-	print(bird)
+class Housing:
+	def __init__(self,name,max_capacity):
+		self.name=name
+		self.max_capacity=max_capacity
+		self.occupants=[]
+		self.dirt_level=0
+	def add_bird(self,new_bird):
+		if len(self.occupants)<self.max_capacity:
+			self.occupants.append(new_bird)
+			print(f"{new_bird} added to {self.name}")
+			return True
+		else:
+			print(f"{self.name} is full")
+			return False
+	def clean(self):
+		self.dirt_level=0
+		print(f"{self.name} is clean")
+class Player:
+	def __init__ (self, name):
+		self.name=name
+		self.coins=250
+		self.properties=[]

@@ -1,4 +1,70 @@
 import os
+from entities import *
+import random
+def buy_housing():
+	global active_player
+	print("1. chicken coop.")
+	print("2. go back")
+	choice=input("select an option")
+	match choice:
+		case "1":
+			if active_player.coins>=80:
+				active_player.coins-=80
+				chicken_coop=Housing("Chicken coop",15)
+				active_player.properties.append(chicken_coop)
+				print(f"Bought chicken coop. Balance: {active_player.coins}")
+			else:
+				print("insufficient funds")
+		case "2":
+			return "buymenu"
+		case _:
+			print("invalid choice")
+	return "buymenu"
+
+def buy_birds():
+	global active_player
+	print("1. buy chicken")
+	print("2. go back")
+	choice=input("select an option")
+	match choice:
+		case "1":
+			if active_player.coins>=100:
+				if len(active_player.properties)==0:
+					print("buy housing first")
+					return "buymenu"
+				active_player.coins-=100
+				gender=random.choice(["male","female"])
+				new_chicken=Chicken(gender)
+				target_house=active_player.properties[0]
+				success=target_house.add_bird(new_chicken)
+				if success:
+					print(f"bought {gender} chicken. Balance: {active_player.coins}")
+				else:
+					print("buy more housing")
+					active_player.coins+=100
+		case "2":
+			return "buymenu"
+		case _:
+			print("invalid choice")
+	return "buymenu"
+
+def buy_menu():
+	global active_player
+	print("1. buy housing")
+	print("2. buy birds")
+	print("3. go back.")
+	choice=input("Select an option")
+	match choice:
+		case "1":
+			return "buyhousingmenu"
+		case "2":
+			return "buybirdsmenu"
+		case "3":
+			return "ranchmenu"
+		case _:
+			print("invalid choice")
+	return "ranchmenu"
+
 
 def check_save_exists():
 	if (os.path.exists("slot1.txt") or 
@@ -67,7 +133,7 @@ def main_menu():
 				print("This is a farm simulator.")
 				return "mainmenu"
 			case "5": 
-				print("Designed by Kavya.")
+				print("Designed buy Kavya.")
 				return "mainmenu"
 			case "6": return "exit"
 			case _:
@@ -80,7 +146,7 @@ def main_menu():
 				print("This is a farm simulator.")
 				return "mainmenu"
 			case "3": 
-				print("Designed by Kavya.")
+				print("Designed buy Kavya.")
 				return "mainmenu"
 			case "4": return "exit"
 			case _:
@@ -130,11 +196,10 @@ def ranch_menu():
 
 	match choice:
 		case "1":
-			print("In development.")
-			return "ranchmenu"
+			
+			return "buymenu"
 		case "2":
-			print("In development.")
-			return "ranchmenu"
+			return "buybirdsmenu"
 		case "3":
 			print("In development.")
 			return "ranchmenu"
@@ -158,7 +223,8 @@ def ranch_menu():
 
 current_state = "mainmenu"
 print("Welcome to Farm Simulator!")
-
+name=input("enter your name")
+active_player=Player(name)
 while current_state != "exit":
 	match current_state:
 		case "mainmenu":
@@ -174,6 +240,12 @@ while current_state != "exit":
 			current_state = "agriculturemenu"
 		case "deletemenu":
 			current_state=delete_menu()
+		case "buymenu":
+			current_state=buy_menu()
+		case "buyhousingmenu":
+			current_state=buy_housing()
+		case "buybirdsmenu":
+			current_state=buy_birds()
 		case _:
 			print("Unknown State.")
 			current_state = "exit"
