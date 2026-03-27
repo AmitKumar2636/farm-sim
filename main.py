@@ -11,6 +11,7 @@ def status_screen():
 	if len(active_player.properties)==0:
 		print("You don't have any properties")
 		return "ranchmenu"
+
 	for index, house in enumerate(active_player.properties,start=1):
 		print(f"{index}. {house.name} capacity: {len(house.occupants)}/{house.max_capacity} dirt: {house.dirt_level}")
 		if len(house.occupants)>0:
@@ -52,8 +53,8 @@ def manage_specific_house():
 	global active_player
 
 	if active_house is None:
-			print("No house selected.")
-	return "managehousemenu"
+		print("No house selected.")
+		return "managehousemenu"
 
 	print(f"{active_house.name}.")
 	print("1. Feed")
@@ -66,9 +67,12 @@ def manage_specific_house():
 	match choice:
 		case "1":
 			print("in development")
+			return "specifichousemenu"
 
 		case "2":
 			print("in development")
+			return "specifichousemenu"
+
 		case "3":
 			active_house.clean()
 			return "managehousemenu"
@@ -184,7 +188,7 @@ def buy_birds():
 		return "buymenu"
 
 	success = target_house.add_bird(new_bird)
-	if success:
+	if success:	
 		active_player.coins -= bird_price
 		print(f"bought {gender} {bird_name}. Balance: {active_player.coins}")
 	else:
@@ -208,6 +212,212 @@ def buy_menu():
 			print("invalid choice")
 	return "ranchmenu"
 
+def sell_menu():
+	global active_player
+
+	print("Sell Menu")
+	print("1. Sell birds")
+	print("2. Sell produce")
+	print("3. Sell housing")
+	print("4. Go back")
+
+	choice = input("Select an option: ").strip()
+
+	match choice:
+		case "1":
+			return "sellbirdsmenu"
+
+		case "2":
+			return "sellproducemenu"
+
+		case "3":
+			return "sellhousingmenu"
+
+		case "4":
+			return "ranchmenu"
+
+		case _:
+			print("Invalid choice.")
+			return "sellmenu"
+
+def sell_birds():
+	global active_player
+
+	if len(active_player.properties) == 0:
+		print("No housing available.")
+		return "sellmenu"
+
+	print("Select house:")
+
+	for index, house in enumerate(active_player.properties, start=1):
+		print(f"{index}. {house.name}")
+
+	choice = input("Select house: ").strip()
+
+	if not choice.isdigit():
+		print("Invalid choice.")
+		return "sellmenu"
+
+	house_index = int(choice) - 1
+
+	if house_index < 0 or house_index >= len(active_player.properties):
+		print("Invalid choice.")
+		return "sellmenu"
+
+	house = active_player.properties[house_index]
+
+	if len(house.occupants) == 0:
+		print("No birds to sell.")
+		return "sellmenu"
+
+	print("Select bird:")
+
+	for index, bird in enumerate(house.occupants, start=1):
+		print(f"{index}. {bird}")
+
+	choice = input("Select bird: ").strip()
+
+	if not choice.isdigit():
+		print("Invalid choice.")
+		return "sellmenu"
+
+	bird_index = int(choice) - 1
+
+	if bird_index < 0 or bird_index >= len(house.occupants):
+		print("Invalid choice.")
+		return "sellmenu"
+
+	bird = house.occupants.pop(bird_index)
+	sell_price = 50
+	if isinstance(bird, Duck):
+		sell_price = 75
+	elif isinstance(bird, Turkey):
+		sell_price = 100
+
+	active_player.coins += sell_price
+	print(f"Sold bird for {sell_price} coins.")
+	print(f"Balance: {active_player.coins}")
+	return "sellmenu"
+
+def sell_housing():
+	global active_player
+
+	if len(active_player.properties) == 0:
+		print("No housing to sell.")
+		return "sellmenu"
+
+	print("Select housing:")
+
+	for index, house in enumerate(active_player.properties, start=1):
+		print(f"{index}. {house.name}")
+
+	print(f"{len(active_player.properties)+1}. Cancel")
+
+	choice = input("Select housing: ").strip()
+
+	if not choice.isdigit():
+		print("Invalid choice.")
+		return "sellmenu"
+
+	index = int(choice)
+
+	if index == len(active_player.properties) + 1:
+		return "sellmenu"
+
+	index -= 1
+
+	if index < 0 or index >= len(active_player.properties):
+		print("Invalid choice.")
+		return "sellmenu"
+
+	house = active_player.properties[index]
+
+	if len(house.occupants) > 0:
+		print("Housing must be empty before selling.")
+		return "sellmenu"
+
+	active_player.properties.pop(index)
+	sell_price = 40
+
+	if "duck" in house.name:
+		sell_price = 60
+
+	elif "turkey" in house.name:
+		sell_price = 75
+
+	active_player.coins += sell_price
+
+	print(f"Sold {house.name} for {sell_price} coins.")
+	print(f"Balance: {active_player.coins}")
+	return "sellmenu"
+
+def sell_produce():
+	global active_player
+
+	if len(active_player.storage) == 0:
+		print("No produce to sell.")
+		return "sellmenu"
+
+	print("Produce Available:")
+
+	items = list(active_player.storage.keys())
+
+	for index, item in enumerate(items, start=1):
+		print(f"{index}. {item}: {active_player.storage[item]}")
+
+	print(f"{len(items)+1}. Go back")
+
+	choice = input("Select item: ").strip()
+
+	if not choice.isdigit():
+		print("Invalid choice.")
+		return "sellmenu"
+
+	index = int(choice)
+
+	if index == len(items) + 1:
+		return "sellmenu"
+
+	if index < 1 or index > len(items):
+		print("Invalid choice.")
+		return "sellmenu"
+
+	item = items[index - 1]
+
+	amount_available = active_player.storage[item]
+
+	amount = input("How many to sell: ").strip()
+
+	if not amount.isdigit():
+		print("Invalid amount.")
+		return "sellmenu"
+
+	amount = int(amount)
+
+	if amount > amount_available:
+		print("Not enough produce.")
+		return "sellmenu"
+
+	price_table = {
+		"eggs": 5,
+		"duck eggs": 10,
+		"turkey meat": 20
+	}
+
+	price = price_table.get(item, 5)
+
+	total = amount * price
+
+	active_player.storage[item] -= amount
+
+	if active_player.storage[item] == 0:
+		del active_player.storage[item]
+
+	active_player.coins += total
+
+	print(f"Sold {amount} {item} for {total} coins.")
+	print(f"Balance: {active_player.coins}")
+	return "sellmenu"
 
 def check_save_exists():
 	if (os.path.exists("slot1.txt") or 
@@ -306,7 +516,7 @@ def main_menu():
 				print("This is a farm simulator.")
 				return "mainmenu"
 			case "3": 
-				print("Designed by Kavya.")
+				print("Designed by Kavya")
 				return "mainmenu"
 			case "4": return "exit"
 			case _:
@@ -407,6 +617,7 @@ def agriculture_menu():
 
 def ranch_menu():
 	global active_player
+
 	if active_player is None:
 		print("No player loaded.")
 		return "mainmenu"
@@ -419,9 +630,7 @@ def ranch_menu():
 
 	match choice:
 		case "1": return "buymenu"
-		case "2":
-			print("Sell system in development.")
-			return "ranchmenu"
+		case "2": return "sellmenu"
 		case "3":
 			return "managehousemenu"
 		case "4":
@@ -466,6 +675,18 @@ while current_state != "exit":
 			current_state=buy_housing()
 		case "buybirdsmenu":
 			current_state=buy_birds()
+		case "sellmenu":
+			current_state = sell_menu()
+
+		case "sellbirdsmenu":
+			current_state = sell_birds()
+
+		case "sellproducemenu":
+			current_state = sell_produce()
+
+		case "sellhousingmenu":
+			current_state = sell_housing()
+
 		case "statusscreen":
 			current_state=status_screen()
 		case "managehousemenu":
@@ -475,4 +696,3 @@ while current_state != "exit":
 		case _:
 			print("Unknown State.")
 			current_state = "exit"
-
